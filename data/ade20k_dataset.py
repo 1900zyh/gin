@@ -12,6 +12,8 @@ import random
 import numpy as np
 from natsort import natsorted
 import torch
+from glob import glob 
+from zipfile import ZipFile 
 
 class ADE20kDataset(BaseDataset):
     def initialize(self, opt):
@@ -42,19 +44,26 @@ class ADE20kDataset(BaseDataset):
         elif opt.phase == 'test':
             # aim 2020 eccv validation set and test set.
             # no ground truth
-            self.dir_A = os.path.join(opt.dataroot, opt.phase)
-            self.A_paths, _ = make_dataset_with_conditions(self.dir_A, '_with_holes')
-            self.A_paths = natsorted(self.A_paths)
+            # self.dir_A = os.path.join(opt.dataroot, 'center_crop_valid')
+            # self.A_paths, _ = make_dataset_with_conditions(self.dir_A, '_with_holes')
+            # self.A_paths = natsorted(self.A_paths)
+            self.A_paths = glob(os.path.join(opt.dataroot, 'places2/center_crop_valid/*.png'))
+            self.A_paths.sort() 
 
             self.dir_B = []
             self.B_paths = []
             self.B_seg_paths = [] # depends on track 1 or 2
 
-            self.dir_mask = os.path.join(opt.dataroot, opt.phase)
-            self.mask_paths, _ = make_dataset_with_conditions(self.dir_mask, '_mask')
-            self.mask_paths = natsorted(self.mask_paths)
+            # self.dir_mask = os.path.join(opt.dataroot, opt.phase)
+            # self.mask_paths, _ = make_dataset_with_conditions(self.dir_mask, '_mask')
+            # self.mask_paths = natsorted(self.mask_paths)
+            self.mask_list = os.path.join(opt.dataroot, 'pconv.zip')
+            self.mask_paths = [f'pconv/{str(2000 * args.level + i).zfill(5)}.png' for i in range(2000)]
+            self.mask_paths = self.mask_paths * int(len(self.A_paths) // len(self.mask_paths) + 1)
 
         self.dataset_size = len(self.A_paths)
+
+
 
     def __getitem__(self, index):
         ################################################
@@ -70,6 +79,7 @@ class ADE20kDataset(BaseDataset):
         params = get_params(self.opt, A.size)
         transform_A = get_transform(self.opt, params, normalize=False)
         A_tensor = transform_A(A)
+        print('A tensor:', A_tensor.size(), A_tensor.min(), A_tensor.max())
 
         B_tensor = mask_tensor = 0
         B_seg_tensor = 0
@@ -170,9 +180,13 @@ class ADE20kDataset(BaseDataset):
 
             # masks
             mask_path = self.mask_paths[index]
-            mask = Image.open(mask_path).convert('L')
+            # mask = Image.open(mask_path).convert('L')
+            mask = ZipFile(self.mask_list).read(mask_path)
+            mask = Image.open(io.BytesIO(mask)).convert('L')
             transform_mask = get_transform(self.opt, params, normalize=False)
             mask_tensor = transform_mask(mask)
+
+            A_tensor = transform_A(A)
 
         if self.opt.phase == 'test':
             input_dict = {

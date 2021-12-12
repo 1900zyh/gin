@@ -17,7 +17,7 @@ class BaseOptions():
     def initialize(self):
         # experiment specifics 
         self.parser.add_argument('--name', type=str, default='experiment', help='name of the experiment. It decides where to store samples and models')
-        self.parser.add_argument('--gpu_ids', type=str, default='0,1', help='gpu ids: e.g. 0  0,1,2  0,2. use -1 for cpu')
+        self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2  0,2. use -1 for cpu')
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         self.parser.add_argument('--model', type=str, default='Ours', help='which model to use')
         self.parser.add_argument('--norm', type=str, default='instance', help='instance or batch normalization') 
@@ -31,7 +31,7 @@ class BaseOptions():
         self.parser.add_argument('--output_nc', type=int, default=3, help='# of output image channels') 
 
         # for setting inputs 
-        self.parser.add_argument('--dataroot', type=str, default='./datasets/ade20k/')
+        self.parser.add_argument('--dataroot', type=str, default='../datasets')
         self.parser.add_argument('--resize_or_crop', type=str, default='standard', help='scaling and/or cropping of images at load time')
         self.parser.add_argument('--serial_batches', action='store_true', help='if true, no shuffle') 
         self.parser.add_argument('--no_flip', action='store_true', help='if true, no flip')

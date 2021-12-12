@@ -41,16 +41,17 @@ class OurModel(BaseModel):
         else:
             self.num_params_D = 0 
 
-        print('-------------------- Networks initialized --------------------') 
+        # print('-------------------- Networks initialized --------------------') 
 
         ### load networks 
-        if not self.isTrain or opt.continue_train or opt.load_pretrain: 
-            pretrained_path = '' if not self.isTrain else opt.load_pretrain 
-            print(pretrained_path) 
+        # if not self.isTrain or opt.continue_train or opt.load_pretrain: 
+        #     pretrained_path = '' if not self.isTrain else opt.load_pretrain 
+        #     print(pretrained_path) 
 
-            self.load_network(self.netG, 'G', opt.which_epoch, pretrained_path) 
-            if self.isTrain:
-                self.load_network(self.netD, 'D', opt.which_epoch, pretrained_path) 
+        #     self.load_network(self.netG, 'G', opt.which_epoch, pretrained_path) 
+        #     if self.isTrain:
+        #         self.load_network(self.netD, 'D', opt.which_epoch, pretrained_path) 
+        self.load_network(self.netG, 'G', opt.which_epoch, opt.pretrained_path)
         
 
         ### set loss functions and optimizers 
@@ -93,8 +94,8 @@ class OurModel(BaseModel):
                     if key.startswith('model' + str(opt.n_local_enhancers)):
                         params += [value] 
                         finetune_list.add(key.split('.')[0]) 
-                print('--------------- Only training the local enhancer network (for %d epochs) ---------------' % opt.niter_fix_global) 
-                print('The layers that are finetuned are ', sorted(finetune_list)) 
+                # print('--------------- Only training the local enhancer network (for %d epochs) ---------------' % opt.niter_fix_global) 
+                # print('The layers that are finetuned are ', sorted(finetune_list)) 
             else:
                 params = list(self.netG.parameters()) 
             self.optimizer_G = torch.optim.Adam(params, lr=opt.lr, betas=(opt.beta1, 0.999)) 
@@ -213,7 +214,7 @@ class OurModel(BaseModel):
         # after fixing the global generator for a # of iterations, also start finetuning it 
         params = list(self.netG.parameters()) 
         self.optimizer_G = torch.optim.Adam(params, lr=self.opt.lr, betas=(self.opt.beta1, 0.999)) 
-        print('----------------- Now also finetuning global generator -----------------') 
+        # print('----------------- Now also finetuning global generator -----------------') 
 
     def update_learning_rate(self): 
         lrd = self.opt.lr / self.opt.niter_decay 
@@ -222,7 +223,7 @@ class OurModel(BaseModel):
             param_group['lr'] = lr * 4.0
         for param_group in self.optimizer_G.param_groups:
             param_group['lr'] = lr 
-        print('update learning rate: %f -> %f' % (self.old_lr, lr)) 
+        # print('update learning rate: %f -> %f' % (self.old_lr, lr)) 
         self.old_lr = lr 
 
 class InferenceModel(OurModel): 
